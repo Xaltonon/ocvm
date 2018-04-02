@@ -10,6 +10,7 @@
 #include "components/internet.h"
 #include "components/sandbox.h"
 #include "components/modem.h"
+#include "components/data.h"
 #include "apis/unicode.h"
 
 Host::Host(string frameType) :
@@ -59,6 +60,10 @@ Component* Host::create(const string& type) const
     else if (type == "modem")
     {
         return new Modem;
+    }
+    else if (type == "data")
+    {
+	return new Data;
     }
 
     return nullptr;
