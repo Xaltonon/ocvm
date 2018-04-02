@@ -36,6 +36,7 @@ Data::Data()
     add("random", &Data::random);
     add("generateKeyPair", &Data::generateKeyPair);
     add("ecdh", &Data::ecdh);
+    add("ecdsa", &Data::ecdsa);
 }
 
 bool Data::onInitialize()
@@ -244,4 +245,28 @@ int Data::ecdh(lua_State* lua)
 	luaL_error(lua, "agreement failed");
 
     return ValuePack::ret(lua, vector<char>(result.begin(), result.end()));
+}
+
+int Data::ecdsa(lua_State* lua)
+{
+    /* okay this is kinda digusting */
+    string data = Value::checkArg<string>(lua, 1);
+    ECKey *key = static_cast<ECKey*>(Value::checkArg<void*>(lua, 2));
+    string defsig;
+    string sig = Value::checkArg<string>(lua, 3, &defsig);
+
+    bool signing = sig == defsig;
+
+    if (signing)
+    {
+	ECDSA<ECP, SHA256>::PrivateKey priv;
+	Integer x(key->key->data(), key->key->size());
+	
+
+	ECDSA<ECP, SHA256>::Signer signer();
+    }
+    else
+    {
+	
+    }
 }
