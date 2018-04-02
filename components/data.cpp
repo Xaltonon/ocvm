@@ -1,6 +1,6 @@
 #include "data.h"
 
-#include <limits>
+#include <memory>
 
 #define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
 
@@ -12,7 +12,14 @@
 #include <cryptopp/zinflate.h>
 #include <cryptopp/aes.h>
 #include <cryptopp/modes.h>
+#include <cryptopp/asn.h>
+#include <cryptopp/oids.h>
+#include <cryptopp/eccrypto.h>
 
+#include "drivers/data_drv.h"
+
+using std::unique_ptr;
+using std::make_unique;
 using namespace CryptoPP;
 
 Data::Data()
@@ -26,11 +33,9 @@ Data::Data()
     add("getLimit", &Data::getLimit);
     add("encrypt", &Data::encrypt);
     add("decrypt", &Data::decrypt);
-}
-
-Data::~Data()
-{
-    
+    add("random", &Data::random);
+    add("generateKeyPair", &Data::generateKeyPair);
+    add("ecdh", &Data::ecdh);
 }
 
 bool Data::onInitialize()
@@ -165,4 +170,78 @@ int Data::decrypt(lua_State *lua)
 
     return ValuePack::ret(lua, result);
 
+}
+
+int Data::random(lua_State *lua)
+{
+    unsigned len = Value::checkArg<unsigned>(lua, 1);
+
+    vector<unsigned char> buf(len);
+    _rng.GenerateBlock(buf.data(), len);
+
+    return ValuePack::ret(lua, vector<char>(buf.begin(), buf.end()));
+}
+
+int Data::generateKeyPair(lua_State* lua)
+{
+    /* todo: verify elliptic curve used in oc */
+    unsigned defaultlen = 384;
+    unsigned keylen = Value::checkArg<unsigned>(lua, 1, &defaultlen);
+
+    OID curve;
+    ECCurve curvetype;
+    if (keylen == 256)
+    {
+	curve = ASN1::secp256r1();
+	curvetype = ECCurve::SECP256R1;
+    }
+    else if (keylen == 384)
+    {
+	curve = ASN1::secp384r1();
+	curvetype = ECCurve::SECP384R1;
+    }
+    else
+	luaL_error(lua, "invalid key length, must be 256 or 384");
+
+    ECDH<ECP>::Domain dh(curve);
+
+    unique_ptr<vector<unsigned char>> privk, pubk;
+
+    privk = make_unique<vector<unsigned char>>(dh.PrivateKeyLength());
+    pubk = make_unique<vector<unsigned char>>(dh.PublicKeyLength());
+    
+    dh.GenerateKeyPair(_rng, privk->data(), pubk->data());
+
+    ECKey *pub, *priv;
+    pub = static_cast<ECKey*>(lua_newuserdata(lua, sizeof(ECKey)));
+    priv = static_cast<ECKey*>(lua_newuserdata(lua, sizeof(ECKey)));
+    new (pub) ECKey(ECKeyType::PUBLIC, move(pubk), curvetype);
+    new (priv) ECKey(ECKeyType::PRIVATE, move(privk), curvetype);
+
+    return 2;
+}
+
+int Data::ecdh(lua_State* lua)
+{
+    ECKey *priv = static_cast<ECKey*>(Value::checkArg<void*>(lua, 1));
+    ECKey *pub = static_cast<ECKey*>(Value::checkArg<void*>(lua, 2));
+
+    if (priv->keytype != ECKeyType::PRIVATE || pub->keytype != ECKeyType::PUBLIC)
+	luaL_error(lua, "key type mismatch");
+    if (priv->curve != pub->curve)
+	luaL_error(lua, "curve mismatch");
+
+    OID curve;
+    if (priv->curve == ECCurve::SECP256R1)
+	curve = ASN1::secp256r1();
+    else if (priv->curve == ECCurve::SECP384R1)
+	curve = ASN1::secp384r1();
+
+    ECDH<ECP>::Domain dh(curve);
+    vector<unsigned char> result(dh.AgreedValueLength());
+
+    if (!dh.Agree(result.data(), priv->key->data(), pub->key->data()))
+	luaL_error(lua, "agreement failed");
+
+    return ValuePack::ret(lua, vector<char>(result.begin(), result.end()));
 }

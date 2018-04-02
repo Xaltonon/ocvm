@@ -3,6 +3,8 @@
 
 #include "model/value.h"
 
+#include <cryptopp/osrng.h>
+
 class Data : public Component
 {
 public:
@@ -28,7 +30,8 @@ public:
     int deserializeKey(lua_State*);
     
     Data();
-    ~Data();
 protected:
     bool onInitialize() override;
+private:
+    CryptoPP::DefaultAutoSeededRNG _rng;
 };
