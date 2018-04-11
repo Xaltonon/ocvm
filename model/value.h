@@ -53,7 +53,6 @@ public:
 
     template <typename T>
     static T checkArg(lua_State* lua, int index, const T* pDefault = nullptr);
-
     // table functions
     vector<string> keys() const;
     vector<std::tuple<Value, Value*>> pairs();
@@ -162,6 +161,13 @@ private:
     {
         lua_pushlstring(lua, arg.data(), arg.size());
         return 1;
+    }
+
+    inline static int push_ret(lua_State* lua, const vector<unsigned char>& arg)
+    {
+	const char *data = reinterpret_cast<const char*>(arg.data());
+	lua_pushlstring(lua, data, arg.size());
+	return 1;
     }
 
     inline static int push_ret(lua_State* lua, const Value& v)

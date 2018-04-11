@@ -3,4 +3,7 @@ ocvm**
 system/**
 /log
 stack.log
-
+.gitignore
+Makefile
+*.nix
+*.patch

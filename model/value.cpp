@@ -57,6 +57,20 @@ vector<char> Value::checkArg<vector<char>>(lua_State* lua, int index, const vect
 }
 
 template <>
+vector<unsigned char> Value::checkArg<vector<unsigned char>>(lua_State* lua, int index, const vector<unsigned char>* pDefault)
+{
+    bool has_type = validate_argument_type(lua, index, LUA_TSTRING, pDefault);
+    
+    if (!has_type)
+        return *pDefault;
+
+    const char* p = lua_tostring(lua, index);
+    int len = lua_rawlen(lua, index);
+    return vector<unsigned char>(p, p+len);
+}
+
+
+template <>
 double Value::checkArg<double>(lua_State* lua, int index, const double* pDefault)
 {
     bool has_type = validate_argument_type(lua, index, LUA_TNUMBER, pDefault);

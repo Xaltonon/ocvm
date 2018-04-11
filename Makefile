@@ -1,13 +1,13 @@
 MAKEFLAGS+="-j 4"
-flags=-g --std=c++14 -Wall
+flags=-g --std=c++17 -Wall
 
 ifeq ($(lua),)
-lua=5.2
+lua=
 endif
 
 ifeq ($(prof),)
-libs=$(shell pkg-config lua$(lua) --libs 2>/dev/null || echo -llua5.2)
-includes=$(shell pkg-config lua$(lua) --cflags)
+libs=$(shell pkg-config lua$(lua) --libs 2>/dev/null || echo -llua) $(shell pkg-config botan --libs 2>/dev/null || echo -lbotan)
+includes=$(shell pkg-config lua$(lua) --cflags) $(shell pkg-config botan --cflags)
 else
 $(info profile build)
 libs=-L../gperftools-2.5/.libs/ -ldl -lprofiler ../lua-5.3.4/src/liblua.a
