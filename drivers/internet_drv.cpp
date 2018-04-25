@@ -84,17 +84,17 @@ bool PipedCommand::open(const string& command, const vector<string>& args)
     return false;
 }
 
-Connection* PipedCommand::stdin() const
+Connection* PipedCommand::in() const
 {
     return _stdin.get();
 }
 
-Connection* PipedCommand::stdout() const
+Connection* PipedCommand::out() const
 {
     return _stdout.get();
 }
 
-Connection* PipedCommand::stderr() const
+Connection* PipedCommand::err() const
 {
     return _stderr.get();
 }
@@ -298,7 +298,7 @@ bool HttpObject::update()
 {
     if (!_response_ready)
     {
-        Connection* resp = _cmd.stderr();
+        Connection* resp = _cmd.err();
         if (!resp->can_read())
         {
             _response_ready = true;
@@ -383,7 +383,7 @@ bool HttpObject::update()
 
 Connection* HttpObject::connection() const
 {
-    return _cmd.stdout();
+    return _cmd.out();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

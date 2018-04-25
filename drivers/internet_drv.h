@@ -62,9 +62,9 @@ public:
     PipedCommand();
     virtual ~PipedCommand();
     bool open(const string& command, const vector<string>& args);
-    Connection* stdin() const;
-    Connection* stdout() const;
-    Connection* stderr() const;
+    Connection* in() const;
+    Connection* out() const;
+    Connection* err() const;
     int id() const;
     void close();
 private:
