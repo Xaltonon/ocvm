@@ -54,8 +54,9 @@ AnsiEscapeTerm::~AnsiEscapeTerm()
 
 void AnsiEscapeTerm::onUpdate()
 {
-    timespec timeout { 0, 0 }; // poll, do not block
-    if (sigtimedwait(&g_sigset, nullptr, &timeout) == SIGWINCH) // winched
+    int sig;
+    sigwait(&g_sigset, &sig);
+    if (sig == SIGWINCH) // winched
     {
         cout << Ansi::clear_scroll << flush;
         auto rez = current_resolution();
