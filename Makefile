@@ -23,7 +23,7 @@ flags+=-Wl,--no-as-needed
 endif
 
 includes+=-I.
-libs+=-lstdc++ -lstdc++fs -pthread
+libs+=-lc++ -lc++experimental -pthread
 
 files=$(wildcard *.cpp)
 files+=$(wildcard apis/*.cpp)
