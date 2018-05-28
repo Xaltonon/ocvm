@@ -18,8 +18,6 @@ using std::error_code;
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
 
-#include <wordexp.h>
-
 static string handle_exception(std::exception& exp)
 {
     return exp.what();
@@ -43,19 +41,6 @@ static string handle_exception(std::exception_ptr&& p)
 string resolve(const string& path)
 {
     string result = path;
-    if (path.size() > 0 && path.find("~") == 0)
-    {
-        ::wordexp_t exp_result;
-        if (::wordexp(path.c_str(), &exp_result, 0) == 0)
-        {
-            if (exp_result.we_wordc == 1)
-            {
-                result = std::string(exp_result.we_wordv[0]);
-            }
-            ::wordfree(&exp_result);
-        }
-    }
-
     return result;
 }
 
