@@ -170,6 +170,11 @@ private:
         return 1;
     }
 
+    inline static int push_ret(lua_State* lua)
+    {
+        return 0;
+    }
+
     template <typename T, typename ...Ts>
     inline static int push_ret(lua_State* lua, const T& arg, const Ts&... args)
     {
