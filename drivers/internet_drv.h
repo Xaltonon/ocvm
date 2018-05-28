@@ -68,9 +68,9 @@ public:
     int id() const;
     void close();
 private:
-    unique_ptr<Connection> _stdin;
-    unique_ptr<Connection> _stdout;
-    unique_ptr<Connection> _stderr;
+    unique_ptr<Connection> _in;
+    unique_ptr<Connection> _out;
+    unique_ptr<Connection> _err;
     pid_t _child_id;
 };
 

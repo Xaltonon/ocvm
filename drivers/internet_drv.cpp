@@ -40,21 +40,21 @@ bool PipedCommand::open(const string& command, const vector<string>& args)
 
     if (_child_id) // parent
     {
-        int stdin = pids[STDIN_FILENO][1];
+        int in = pids[STDIN_FILENO][1];
         ::close(pids[STDIN_FILENO][0]);
-        set_nonblocking(stdin);
+        set_nonblocking(in);
 
-        int stdout = pids[STDOUT_FILENO][0];
+        int out = pids[STDOUT_FILENO][0];
         ::close(pids[STDOUT_FILENO][1]);
-        set_nonblocking(stdout);
+        set_nonblocking(out);
 
-        int stderr = pids[STDERR_FILENO][0];
+        int err = pids[STDERR_FILENO][0];
         ::close(pids[STDERR_FILENO][1]);
-        set_nonblocking(stderr);
+        set_nonblocking(err);
 
-        _stdin.reset(new Connection(stdin));
-        _stdout.reset(new Connection(stdout));
-        _stderr.reset(new Connection(stderr));
+        _in.reset(new Connection(in));
+        _out.reset(new Connection(out));
+        _err.reset(new Connection(err));
 
         // success
         return true;
@@ -86,17 +86,17 @@ bool PipedCommand::open(const string& command, const vector<string>& args)
 
 Connection* PipedCommand::in() const
 {
-    return _stdin.get();
+    return _in.get();
 }
 
 Connection* PipedCommand::out() const
 {
-    return _stdout.get();
+    return _out.get();
 }
 
 Connection* PipedCommand::err() const
 {
-    return _stderr.get();
+    return _err.get();
 }
 
 int PipedCommand::id() const
